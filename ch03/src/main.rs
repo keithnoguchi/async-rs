@@ -1,27 +1,24 @@
-use std::arch::asm;
+use std::io;
 
 fn main() {
-    let message = "Hello world from raw syscall!\n";
-    let msg = message.to_string();
-    syscall(msg)
+    let msg = "Hello world from syscall!\n";
+    let msg = msg.to_string();
+    syscall(msg).unwrap();
 }
 
-#[inline(never)]
-fn syscall(msg: String) {
+#[cfg(target_family = "unix")]
+#[link(name = "C")]
+extern "C" {
+    fn write(fd: u32, buf: *const u8, count: usize) -> i32;
+}
+
+fn syscall(msg: String) -> io::Result<()> {
     let ptr = msg.as_ptr();
     let n = msg.len();
+    let ret = unsafe { write(1, ptr, n) };
 
-    unsafe {
-        asm!(
-            "mov x16, 4",
-            "mov x0, 1",
-            "svc 0",
-            in("x1") ptr,
-            in("x2") n,
-            out("x16") _,
-            out("x0") _,
-            lateout("x1") _,
-            lateout("x2") _
-        );
+    if ret == -1 {
+        return Err(io::Error::last_os_error());
     }
+    Ok(())
 }
