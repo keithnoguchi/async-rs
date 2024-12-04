@@ -11,17 +11,13 @@ fn main() {
 #[cfg(target_arch = "x86_64")]
 fn dereference(ptr: *const usize) -> usize {
     let mut res: usize;
-    unsafe {
-        asm!("mov {0}, [{1}]", out(reg) res, in(reg) ptr)
-    };
+    unsafe { asm!("mov {0}, [{1}]", out(reg) res, in(reg) ptr) };
     res
 }
 
 #[cfg(target_arch = "aarch64")]
 fn dereference(ptr: *const usize) -> usize {
     let mut res: usize;
-    unsafe {
-        asm!("ldr {0}, [{1}]", out(reg) res, in(reg) ptr)
-    };
+    unsafe { asm!("ldr {0}, [{1}]", out(reg) res, in(reg) ptr) };
     res
 }
